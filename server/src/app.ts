@@ -1,0 +1,45 @@
+import express from "express";
+import { HttpStatusCode } from "./utils/constants";
+import { errorHandler } from "./middlewares/error.middleware";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import { xssSanitizer } from "./middlewares/xss.middleware";
+import cors from "cors";
+import corsOptions from "./config/cors";
+
+const app = express();
+
+// Cors Config
+app.use(cors(corsOptions));
+
+// Global Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+// Security Middlewares
+app.use(helmet());
+app.use(xssSanitizer);
+app.use(
+  mongoSanitize({
+    replaceWith: "_",
+  })
+);
+
+// Home Route
+app.get("/", (req, res) => {
+  res.send("Welcome to Ai Resume Builder API.");
+});
+
+// Not Found Routes
+app.get(/(.*)/, (req, res) => {
+  res
+    .status(HttpStatusCode.NOT_FOUND)
+    .send(`Can't find ${req.originalUrl} on this server.`);
+});
+
+// Error Handler Middleware
+app.use(errorHandler);
+
+export default app;
