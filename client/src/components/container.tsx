@@ -10,7 +10,7 @@ const Container = ({ children, className }: ContainerProps) => {
   return (
     <div
       className={cn(
-        "mx-4 sm:mx-8 md:mx-12 lg:mx-16 xl:mx-32 2xl:mx-auto 2xl:max-w-384 bg-red-500",
+        "mx-4 sm:mx-8 md:mx-12 lg:mx-16 xl:mx-32 2xl:mx-auto 2xl:max-w-384",
         className
       )}
     >

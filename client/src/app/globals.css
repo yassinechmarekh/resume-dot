@@ -39,6 +39,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --breakpoint-xs: 400px;
+  --animate-fade: fade 1.8s ease-in-out infinite;
 }
 
 :root {
@@ -76,12 +78,34 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 scroll-smooth;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .hover-effect {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  .marquee-inner {
+    animation: marqueeScroll 25s linear infinite;
+  }
+  .marquee-reverse {
+    animation-direction: reverse;
   }
 }
