@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify your email</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+        background-color: #f5f5f5;
+        padding: 20px;
+        line-height: 1.6;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .header {
+        background: linear-gradient(135deg, #4caf50 0%, #3d9142 100%);
+        padding: 40px 30px;
+        text-align: center;
+        color: #ffffff;
+      }
+
+      .logo {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .logo-dot {
+        color: #ffffff;
+        font-size: 32px;
+        vertical-align: middle;
+      }
+
+      .content {
+        padding: 40px 30px;
+      }
+
+      .greeting {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+      }
+
+      .wave {
+        font-size: 28px;
+        margin-right: 8px;
+      }
+
+      .message {
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 30px;
+        line-height: 1.8;
+      }
+
+      .otp-container {
+        background-color: #f8f9fa;
+        border: 2px solid #4caf50;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .otp-label {
+        font-size: 14px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .otp-code {
+        font-size: 42px;
+        font-weight: 700;
+        color: #4caf50;
+        letter-spacing: 8px;
+        font-family: "Courier New", monospace;
+        margin: 10px 0;
+      }
+
+      .otp-info {
+        font-size: 13px;
+        color: #888;
+        margin-top: 15px;
+      }
+
+      .warning {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px 20px;
+        margin: 25px 0;
+        border-radius: 4px;
+      }
+
+      .warning-text {
+        font-size: 14px;
+        color: #856404;
+        margin: 0;
+      }
+
+      .footer {
+        background-color: #f8f9fa;
+        padding: 30px;
+        text-align: center;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .footer-text {
+        font-size: 13px;
+        color: #888;
+        margin-bottom: 15px;
+      }
+
+      .social-links {
+        margin-top: 20px;
+      }
+
+      .social-link {
+        display: inline-block;
+        margin: 0 8px;
+        color: #4caf50;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .divider {
+        height: 1px;
+        background-color: #e0e0e0;
+        margin: 25px 0;
+      }
+
+      @media only screen and (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+
+        .content {
+          padding: 30px 20px;
+        }
+
+        .header {
+          padding: 30px 20px;
+        }
+
+        .otp-code {
+          font-size: 36px;
+          letter-spacing: 6px;
+        }
+
+        .greeting {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">resume<span class="logo-dot">.</span></div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="greeting">
+          <span class="wave">👋</span> Hi <%= username %>!
+        </div>
+
+        <p class="message">
+          Thank you for signing up for <strong>resume.</strong> We're excited to
+          help you land your dream job faster!
+        </p>
+
+        <p class="message">
+          To complete your registration and secure your account, please use the
+          verification code below:
+        </p>
+
+        <!-- OTP Code -->
+        <div class="otp-container">
+          <div class="otp-label">Your verification code</div>
+          <div class="otp-code"><%= otp %></div>
+          <div class="otp-info">⏱️ This code expires in 10 minutes</div>
+        </div>
+
+        <p class="message">
+          Simply enter this code on the verification page to activate your
+          account and start creating your professional resume.
+        </p>
+
+        <!-- Warning -->
+        <div class="warning">
+          <p class="warning-text">
+            <strong>⚠️ Security:</strong> Never share this code with anyone. Our
+            team will never ask for your verification code.
+          </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="message" style="font-size: 14px; color: #888">
+          If you didn't create an account on resume., you can safely ignore this
+          email.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p class="footer-text">
+          Need help? Contact us at
+          <a
+            href="mailto:support@resume.com"
+            style="color: #4caf50; text-decoration: none"
+            >support@resume.com</a
+          >
+        </p>
+
+        <div class="social-links">
+          <a href="#" class="social-link">Twitter</a> •
+          <a href="#" class="social-link">LinkedIn</a> •
+          <a href="#" class="social-link">Facebook</a>
+        </div>
+
+        <p class="footer-text" style="margin-top: 20px">
+          © 2025 resume. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

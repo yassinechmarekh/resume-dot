@@ -7,6 +7,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import { xssSanitizer } from "./middlewares/xss.middleware";
 import cors from "cors";
 import corsOptions from "./config/cors";
+import routes from "./routes/index.route";
 
 const app = express();
 
@@ -31,6 +32,9 @@ app.use(
 app.get("/", (req, res) => {
   res.send("Welcome to Ai Resume Builder API.");
 });
+
+// App Routes
+app.use('/api', routes);
 
 // Not Found Routes
 app.get(/(.*)/, (req, res) => {

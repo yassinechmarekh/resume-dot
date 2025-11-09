@@ -13,3 +13,12 @@ export const enum Environment {
   DEVELOPMENT = "development",
   TEST = "test",
 }
+
+export const enum AuthProviders {
+  LOCAL = "local",
+  GOOGLE = "google",
+}
+
+export const enum CookieKeys {
+  REFRESH_TOKEN = "refreshToken",
+}
