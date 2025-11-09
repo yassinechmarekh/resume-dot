@@ -8,6 +8,7 @@ import { xssSanitizer } from "./middlewares/xss.middleware";
 import cors from "cors";
 import corsOptions from "./config/cors";
 import routes from "./routes/index.route";
+import passport from "./config/passport";
 
 const app = express();
 
@@ -28,13 +29,16 @@ app.use(
   })
 );
 
+// Passport Middleware
+app.use(passport.initialize());
+
 // Home Route
 app.get("/", (req, res) => {
   res.send("Welcome to Ai Resume Builder API.");
 });
 
 // App Routes
-app.use('/api', routes);
+app.use("/api", routes);
 
 // Not Found Routes
 app.get(/(.*)/, (req, res) => {

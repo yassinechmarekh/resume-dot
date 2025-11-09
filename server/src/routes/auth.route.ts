@@ -14,6 +14,7 @@ import {
 import {
   forgotPasswordController,
   getProfileDataController,
+  googleCallbackController,
   loginController,
   logoutController,
   refreshTokenController,
@@ -25,6 +26,8 @@ import {
   verifyResetPasswordTokenController,
 } from "../controllers/auth.controller";
 import { isAuthenticated } from "../middlewares/auth.middleware";
+import { HttpStatusCode } from "../utils/constants";
+import passport from "../config/passport";
 
 const router = Router();
 
@@ -76,9 +79,31 @@ router.route("/profile-data").get(isAuthenticated, getProfileDataController);
 router.route("/logout").get(isAuthenticated, logoutController);
 
 // ~/api/auth/refresh
-router.route('/refresh').get(refreshTokenController);
+router.route("/refresh").get(refreshTokenController);
 
 // ~/api/auth/verify-token
-router.route('/verify-token').get(verifyAccessTokenController)
+router.route("/verify-token").get(verifyAccessTokenController);
+
+// ~/api/auth/google
+router.route("/google").get(
+  passport.authenticate("google", {
+    scope: ["email", "profile"],
+    session: true,
+  })
+);
+
+// ~/api/auth/google/callback
+router.route("/google/callback").get(
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/auth/google/failure",
+  }),
+  googleCallbackController
+);
+
+// ~/api/auth/google/failure
+router.route("/google/failure").get((req, res) => {
+  res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Google authentication failed" });
+});
 
 export default router;

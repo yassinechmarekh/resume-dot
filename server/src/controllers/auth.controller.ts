@@ -536,3 +536,44 @@ export const verifyAccessTokenController = async (
     next(error);
   }
 };
+
+/**----------------------------------------
+ * @desc Google callback
+ * @route /api/auth/google/callback
+ * @method GET
+ * @access public  
+ -----------------------------------------*/
+export const googleCallbackController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      res.status(HttpStatusCode.FORBIDDEN).json({
+        message: "No user provided by google auth.",
+      });
+      return;
+    }
+
+    const accesToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
+
+    res
+      .cookie(CookieKeys.REFRESH_TOKEN, refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === Environment.PRODUCTION,
+        sameSite: "none",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .redirect(
+        `${process.env.CLIENT_DOMAIN}/auth/success?token=${accesToken}`
+      );
+  } catch (error) {
+    console.log("Google Callback Controller Error :");
+    console.log(error);
+    next(error);
+  }
+};
