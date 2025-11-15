@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ZodType } from "zod";
 import { HttpStatusCode } from "../utils/constants";
 import { Types } from "mongoose";
+import fs from "fs";
 
 export const validateBody =
   (schema: ZodType) =>
@@ -57,6 +58,37 @@ export const validateObjectId =
       res.status(HttpStatusCode.BAD_REQUEST).json({
         message: `Parameter '${paramName}' is not valid ObjectId.`,
       });
+      return;
+    }
+
+    next();
+  };
+
+export const validateImageUploaded =
+  (imageName: string) => (req: Request, res: Response, next: NextFunction) => {
+    const image = req.file;
+
+    if (!image) {
+      res.status(HttpStatusCode.BAD_REQUEST).json({
+        message: `${imageName} is required.`,
+      });
+      return;
+    }
+
+    const allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+    if (!allowed.includes(image.mimetype)) {
+      res.status(HttpStatusCode.BAD_REQUEST).json({
+        message: "Only image files are allowed!",
+      });
+      fs.unlinkSync(image.path);
+      return;
+    }
+
+    if (image.size > 5 * 1024 * 1024) {
+      res.status(HttpStatusCode.BAD_REQUEST).json({
+        messgae: `${imageName} size exceeds 5MB limit!`,
+      });
+      fs.unlinkSync(image.path);
       return;
     }
 

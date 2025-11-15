@@ -44,7 +44,7 @@ app.use("/api", routes);
 app.get(/(.*)/, (req, res) => {
   res
     .status(HttpStatusCode.NOT_FOUND)
-    .send(`Can't find ${req.originalUrl} on this server.`);
+    .json({ message: `Can't find ${req.originalUrl} on this server.` });
 });
 
 // Error Handler Middleware

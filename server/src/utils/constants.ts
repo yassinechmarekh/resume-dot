@@ -22,3 +22,10 @@ export const enum AuthProviders {
 export const enum CookieKeys {
   REFRESH_TOKEN = "refreshToken",
 }
+
+export const enum Templates {
+  CLASSIC = "classic",
+  MINIMAL = "minimal",
+  MODERN = "modern",
+  MINIMAL_IMAGE = "minimal-image",
+}

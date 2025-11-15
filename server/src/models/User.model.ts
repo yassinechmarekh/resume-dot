@@ -63,7 +63,7 @@ const userSchema = new Schema<IUser>(
     },
     providers: [
       {
-        type: String,
+        type: [String],
         enum: [AuthProviders.LOCAL, AuthProviders.GOOGLE],
         default: [AuthProviders.LOCAL],
       },
