@@ -1,5 +1,6 @@
 "use client";
 
+import { resetPasswordAction } from "@/action/auth.action";
 import Logo from "@/components/logo";
 import { Parag, Title } from "@/components/text";
 import { Button } from "@/components/ui/button";
@@ -17,13 +18,20 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, LockKeyhole } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
-const ResetPasswordForm = () => {
+interface ResetPasswordFormProps {
+  token: string;
+}
+
+const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof ResetPasswordSchema>>({
     resolver: zodResolver(ResetPasswordSchema),
@@ -33,10 +41,21 @@ const ResetPasswordForm = () => {
     },
   });
 
-  const resetPasswordHandler = (data: z.infer<typeof ResetPasswordSchema>) => {
+  const resetPasswordHandler = async (
+    data: z.infer<typeof ResetPasswordSchema>
+  ) => {
     try {
       setIsLoading(true);
-      console.log(data);
+      const response = await resetPasswordAction(data, token);
+
+      if (response.success) {
+        if (response.redirectTo) {
+          router.replace(response.redirectTo);
+        }
+        toast.success(response.message);
+      } else {
+        toast.error(response.message);
+      }
     } catch (error) {
       console.log("Reset Password Handler :", error);
       toast.error("Internal server error.", {

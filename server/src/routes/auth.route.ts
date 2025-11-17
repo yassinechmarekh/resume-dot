@@ -102,8 +102,10 @@ router.route("/google/callback").get(
 );
 
 // ~/api/auth/google/failure
-router.route("/google/failure").get((req, res) => {
-  res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Google authentication failed" });
+router.route("/google/failure").get((_req, res) => {
+  res
+    .status(HttpStatusCode.FORBIDDEN)
+    .redirect(`${process.env.CLIENT_DOMAIN}/auth/google/failure`);
 });
 
 export default router;

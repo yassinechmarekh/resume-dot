@@ -25,7 +25,7 @@ export const sendEmailVerification = async (
 
   const templatePath = path.join(__dirname, "../views/email-verification.ejs");
   const template = await ejs.renderFile(templatePath, {
-    username: user.username,
+    username: user.username.toUpperCase(),
     otp,
   });
 
@@ -54,7 +54,7 @@ export const sendResetPasswordLink = async (
     "../views/reset-password-email.ejs"
   );
   const template = await ejs.renderFile(templatePath, {
-    username: user.username,
+    username: user.username.toUpperCase(),
     link,
   });
 

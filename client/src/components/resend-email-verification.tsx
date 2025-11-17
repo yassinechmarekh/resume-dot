@@ -4,10 +4,15 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { LocalStorageKeys } from "@/lib/constants";
 import { toast } from "sonner";
+import { resendOTPAction } from "@/action/auth.action";
 
 const TIMER_DURATION = 120;
 
-const ResendEmailVerification = () => {
+interface ResendEmailVerificationProps {
+  userId: string;
+}
+
+const ResendEmailVerification = ({ userId }: ResendEmailVerificationProps) => {
   const [intervalTime, setIntervalTime] = useState<number>(0);
 
   const getRemainingTimeFromStorage = () => {
@@ -26,7 +31,14 @@ const ResendEmailVerification = () => {
 
   const handleResendOTP = async () => {
     try {
-      console.log("handle resend OTP started");
+      const result = await resendOTPAction(userId);
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success(result.message);
     } catch (error) {
       console.log(error);
       toast.error("Internal server error", {

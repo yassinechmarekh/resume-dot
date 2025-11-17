@@ -1,3 +1,5 @@
+"use client";
+
 import Container from "./container";
 import Logo from "./logo";
 import Link from "next/link";
@@ -11,8 +13,10 @@ import {
 } from "./ui/sheet";
 import { Menu } from "lucide-react";
 import { AuthPages, Routes, menuLinks } from "@/lib/constants";
+import { useAuth } from "@/context/auth-context";
 
 const Header = () => {
+  const { isAuthenticated } = useAuth();
   return (
     <header>
       <div className="py-2 bg-green-600">
@@ -45,18 +49,26 @@ const Header = () => {
             ))}
           </div>
 
-          <div className="hidden lg:block space-x-3">
-            <Button variant={"primary"} asChild className={"rounded-full"}>
-              <Link href={`/${Routes.DASHBOARD}`}>Get started</Link>
-            </Button>
-            <Button
-              variant={"secondary"}
-              asChild
-              className={"rounded-full px-6"}
-            >
-              <Link href={`/${Routes.AUTH}/${AuthPages.LOGIN}`}>Login</Link>
-            </Button>
-          </div>
+          {isAuthenticated ? (
+            <div className="hidden lg:block">
+              <Button variant={"primary"} asChild className={"rounded-full"}>
+                <Link href={`/${Routes.DASHBOARD}`}>Dashboard</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="hidden lg:block space-x-3">
+              <Button variant={"primary"} asChild className={"rounded-full"}>
+                <Link href={`/${Routes.DASHBOARD}`}>Get started</Link>
+              </Button>
+              <Button
+                variant={"secondary"}
+                asChild
+                className={"rounded-full px-6"}
+              >
+                <Link href={`/${Routes.AUTH}/${AuthPages.LOGIN}`}>Login</Link>
+              </Button>
+            </div>
+          )}
 
           {/* Mobile Menu */}
           <Sheet>
@@ -84,24 +96,34 @@ const Header = () => {
                 ))}
               </div>
               <SheetFooter>
-                <div className="flex flex-col gap-2">
+                {isAuthenticated ? (
                   <Button
                     variant={"primary"}
                     asChild
                     className={"rounded-full"}
                   >
-                    <Link href={`/${Routes.DASHBOARD}`}>Get started</Link>
+                    <Link href={`/${Routes.DASHBOARD}`}>Dashboard</Link>
                   </Button>
-                  <Button
-                    variant={"secondary"}
-                    asChild
-                    className={"rounded-full px-6"}
-                  >
-                    <Link href={`/${Routes.AUTH}/${AuthPages.LOGIN}`}>
-                      Login
-                    </Link>
-                  </Button>
-                </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant={"primary"}
+                      asChild
+                      className={"rounded-full"}
+                    >
+                      <Link href={`/${Routes.DASHBOARD}`}>Get started</Link>
+                    </Button>
+                    <Button
+                      variant={"secondary"}
+                      asChild
+                      className={"rounded-full px-6"}
+                    >
+                      <Link href={`/${Routes.AUTH}/${AuthPages.LOGIN}`}>
+                        Login
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </SheetFooter>
             </SheetContent>
           </Sheet>

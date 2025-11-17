@@ -53,6 +53,9 @@ export const registerController = async (
 
     res.status(HttpStatusCode.CREATED).json({
       message: "We send a verification email. Please check your inbox.",
+      user: {
+        _id: user._id,
+      },
     });
   } catch (error) {
     console.log("Register Controller Error :");
@@ -110,7 +113,6 @@ export const loginController = async (
       .cookie(CookieKeys.REFRESH_TOKEN, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === Environment.PRODUCTION,
-        sameSite: "none",
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .json({
@@ -418,9 +420,8 @@ export const logoutController = async (
       .clearCookie(CookieKeys.REFRESH_TOKEN, {
         httpOnly: true,
         secure: process.env.NODE_ENV === Environment.PRODUCTION,
-        sameSite: "none",
       })
-      .status(HttpStatusCode.CREATED)
+      .status(HttpStatusCode.OK)
       .json({
         message: "You are logout.",
       });
@@ -565,11 +566,10 @@ export const googleCallbackController = async (
       .cookie(CookieKeys.REFRESH_TOKEN, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === Environment.PRODUCTION,
-        sameSite: "none",
         maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .redirect(
-        `${process.env.CLIENT_DOMAIN}/auth/success?token=${accesToken}`
+        `${process.env.CLIENT_DOMAIN}/auth/google/success?token=${accesToken}`
       );
   } catch (error) {
     console.log("Google Callback Controller Error :");

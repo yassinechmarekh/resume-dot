@@ -1,5 +1,6 @@
 "use client";
 
+import { verifyEmailAction } from "@/action/auth.action";
 import Logo from "@/components/logo";
 import ResendEmailVerification from "@/components/resend-email-verification";
 import { Parag } from "@/components/text";
@@ -22,13 +23,20 @@ import {
 import { VerifyEmailSchema } from "@/lib/schemas/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
-const VerifyEmailForm = () => {
+interface VerifyEmailFormProps {
+  userId: string;
+}
+
+const VerifyEmailForm = ({ userId }: VerifyEmailFormProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof VerifyEmailSchema>>({
     resolver: zodResolver(VerifyEmailSchema),
@@ -37,10 +45,21 @@ const VerifyEmailForm = () => {
     },
   });
 
-  const verifyEmailHandler = (data: z.infer<typeof VerifyEmailSchema>) => {
+  const verifyEmailHandler = async (
+    data: z.infer<typeof VerifyEmailSchema>
+  ) => {
     try {
       setIsLoading(true);
-      console.log(data);
+      const response = await verifyEmailAction(data, userId);
+
+      if (response.success) {
+        if (response.redirectTo) {
+          router.replace(response.redirectTo);
+        }
+        toast.success(response.message);
+      } else {
+        toast.error(response.message);
+      }
     } catch (error) {
       console.log("Verify Email Handler :", error);
       toast.error("Internal server error.", {
@@ -94,7 +113,7 @@ const VerifyEmailForm = () => {
                       </InputOTPGroup>
                     </InputOTP>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-center" />
                 </FormItem>
               )}
             />
@@ -113,7 +132,7 @@ const VerifyEmailForm = () => {
               )}
             </Button>
           </div>
-          <ResendEmailVerification />
+          <ResendEmailVerification userId={userId} />
         </form>
       </Form>
     </div>

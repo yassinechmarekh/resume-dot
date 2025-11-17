@@ -10,6 +10,7 @@ export type PersonalInfoType = {
 };
 
 export type ExperinceType = {
+  _id: string;
   company: string;
   position: string;
   start_date: Date;
@@ -19,6 +20,7 @@ export type ExperinceType = {
 };
 
 export type EducationType = {
+  _id: string;
   institution: string;
   degree: string;
   field: string;
@@ -26,6 +28,7 @@ export type EducationType = {
 };
 
 export type ProjectType = {
+  _id: string;
   name: string;
   type: string;
   description: string;
@@ -48,4 +51,16 @@ export type ResumeType = {
   project: ProjectType[];
   updatedAt: Date;
   createdAt: Date;
+};
+
+export type UserType = {
+  _id: string;
+  username: string;
+  email: string;
+};
+
+export type ActionResponseType = {
+  success: boolean;
+  message: string;
+  redirectTo?: string;
 };

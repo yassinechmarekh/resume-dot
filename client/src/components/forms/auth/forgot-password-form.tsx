@@ -1,5 +1,6 @@
 "use client";
 
+import { forgotPasswordAction } from "@/action/auth.action";
 import Logo from "@/components/logo";
 import { Parag, Title } from "@/components/text";
 import { Button } from "@/components/ui/button";
@@ -33,12 +34,19 @@ function ForgotPasswordForm() {
     },
   });
 
-  const forgotPasswordHandler = (
+  const forgotPasswordHandler = async (
     data: z.infer<typeof ForgotPasswordSchema>
   ) => {
     try {
       setIsLoading(true);
-      console.log(data);
+      const result = await forgotPasswordAction(data);
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success(result.message);
     } catch (error) {
       console.log("Forgot Password Handler :", error);
       toast.error("Internal server error.", {

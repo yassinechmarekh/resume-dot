@@ -28,15 +28,20 @@ export const RegisterSchema = UserSchema.pick({
   email: true,
   password: true,
   confirm_password: true,
-}).extend({
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters long.")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|\\:;"'<>,.?/~`]).*$/,
-      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
-    ),
-});
+})
+  .extend({
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long.")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]|\\:;"'<>,.?/~`]).*$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+      ),
+  })
+  .refine((val) => val.password === val.confirm_password, {
+    path: ["confirm_password"],
+    message: "Passwords do not match.",
+  });
 
 export const ForgotPasswordSchema = UserSchema.pick({
   email: true,
@@ -60,7 +65,7 @@ export const ResetPasswordSchema = z
 
 export const VerifyEmailSchema = z.object({
   codeOTP: z
-    .number({ message: "The code must be a number."})
+    .number({ message: "The code must be a number." })
     .min(100000, { message: "The code must be exactly 6 digits." })
     .max(999999, { message: "The code must be exactly 6 digits." }),
 });
