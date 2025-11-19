@@ -66,8 +66,8 @@ router
 
 // ~/api/resume/:resumeId
 router
-  .use("/:resumeId", isAuthenticated, validateObjectId("resumeId"))
   .route("/:resumeId")
+  .all(isAuthenticated, validateObjectId("resumeId"))
   .get(getSpecificResumeController)
   .put(validateBody(UpdateResumeSchema), updateResumeController)
   .delete(deleteResumeController);

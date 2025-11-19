@@ -11,6 +11,7 @@ import openai from "../config/open-ai";
 import { Types } from "mongoose";
 import imageKit from "../config/image-kit";
 import fs from "fs";
+import { PersonalInfoType } from "../types";
 
 /**----------------------------------------
  * @desc Create a new Resume
@@ -50,6 +51,9 @@ export const createResumeController = async (
 
     res.status(HttpStatusCode.CREATED).json({
       message: `"${newResume.title}" is created successfully.`,
+      resume: {
+        _id: newResume._id,
+      },
     });
   } catch (error) {
     console.log("Create Resume Controller Error :");
@@ -161,6 +165,9 @@ export const uploadResumeController = async (
 
     res.status(HttpStatusCode.CREATED).json({
       message: `"${newResume.title.toUpperCase()}" created successfully.`,
+      resume: {
+        _id: newResume._id,
+      },
     });
   } catch (error) {
     console.log("Upload Resume Controller Error :"), console.log(error);
@@ -182,7 +189,7 @@ export const updateResumeController = async (
   try {
     const resumeId = new Types.ObjectId(req.params.resumeId);
     const userId = req.user?._id;
-    const body = req.body as Partial<IResume>;
+    const body = req.body;
 
     if (!userId) {
       res.status(HttpStatusCode.FORBIDDEN).json({
@@ -293,7 +300,7 @@ export const getUserResumesController = async (
       return;
     }
 
-    const resumes = await Resume.find({ userId });
+    const resumes = await Resume.find({ userId }).sort({ createdAt: -1 });
 
     res.status(HttpStatusCode.OK).json({
       resumes,

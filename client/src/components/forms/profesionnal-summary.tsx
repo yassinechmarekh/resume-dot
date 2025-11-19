@@ -1,6 +1,6 @@
-import React from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "../ui/button";
-import { Sparkles } from "lucide-react";
+import { LoaderCircle, Sparkles } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import z from "zod";
 import { updateResumeSchema } from "@/lib/schemas/resume.schema";
@@ -12,12 +12,52 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Textarea } from "../ui/textarea";
+import { toast } from "sonner";
+import { enhanceTextAction } from "@/action/resume.action";
+import { ResumeType } from "@/types";
 
 interface ProfessionnalSummaryProps {
   form: UseFormReturn<z.infer<typeof updateResumeSchema>>;
+  setResumeData: Dispatch<SetStateAction<ResumeType>>;
 }
 
-const ProfessionnalSummary = ({ form }: ProfessionnalSummaryProps) => {
+const ProfessionnalSummary = ({
+  form,
+  setResumeData,
+}: ProfessionnalSummaryProps) => {
+  const [enhanceLoading, setEnhanceLoading] = useState<boolean>(false);
+
+  const enhanceProfesionnalSummaryHandler = async () => {
+    try {
+      setEnhanceLoading(true);
+      const text = form.getValues("professional_summary");
+      const result = await enhanceTextAction("summary", text);
+
+      if (result.success) {
+        if (result.text) {
+          form.setValue("professional_summary", result.text.trim());
+          setResumeData((prev) => ({
+            ...prev,
+            professional_summary: result.text?.trim() as string,
+          }));
+        }
+        return;
+      } else {
+        toast.error("Internal server error", {
+          description: "Something went wrong. Please try again.",
+        });
+        return;
+      }
+    } catch (error) {
+      console.log("Enhance Profesionnal Summary Hanlder Error :");
+      console.log(error);
+      toast.error("Internal server error", {
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setEnhanceLoading(false);
+    }
+  };
   return (
     <div className={"space-y-6"}>
       <div className={"flex flex-wrap items-center justify-between gap-3"}>
@@ -33,10 +73,22 @@ const ProfessionnalSummary = ({ form }: ProfessionnalSummaryProps) => {
           variant={"purple"}
           size={"sm"}
           type={"button"}
-          className={"ml-auto [&_svg]:size-3.5"}
-          disabled={form.getValues("professional_summary").trim() === ""}
+          className={"ml-auto [&_svg]:size-3.5 min-w-24"}
+          disabled={
+            form.getValues("professional_summary").trim() === "" ||
+            enhanceLoading
+          }
+          onClick={enhanceProfesionnalSummaryHandler}
         >
-          <Sparkles /> AI Enhance
+          {enhanceLoading ? (
+            <>
+              <LoaderCircle className={"animate-spin"} /> Enhancing...
+            </>
+          ) : (
+            <>
+              <Sparkles /> AI Enhance
+            </>
+          )}
         </Button>
       </div>
       <FormField
@@ -49,6 +101,13 @@ const ProfessionnalSummary = ({ form }: ProfessionnalSummaryProps) => {
                 placeholder="Write a compelling professional summary that highlights your key strengths and career objectives..."
                 className="resize-none h-48"
                 {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  setResumeData((prev) => ({
+                    ...prev,
+                    professional_summary: e.target.value,
+                  }));
+                }}
               />
             </FormControl>
             <FormDescription

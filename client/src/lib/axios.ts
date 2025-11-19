@@ -1,8 +1,9 @@
-"use server";
+import "server-only";
 
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { cookies } from "next/headers";
 import { CookieKeys, HttpStatusCode } from "./constants";
+import { redirect } from "next/navigation";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
@@ -89,9 +90,21 @@ api.interceptors.response.use(
           }
         );
 
-        const newAccessToken = response.data.accessToken;
+        if (response.status !== HttpStatusCode.OK) {
+          cookieStore.delete(CookieKeys.ACCESSTOKEN);
+          cookieStore.delete(CookieKeys.REFRESHTOKEN);
 
-        if (newAccessToken) {
+          redirect("/auth/login");
+        } else {
+          const newAccessToken = response.data.accessToken;
+
+          if (!newAccessToken) {
+            cookieStore.delete(CookieKeys.ACCESSTOKEN);
+            cookieStore.delete(CookieKeys.REFRESHTOKEN);
+
+            redirect("/auth/login");
+          }
+
           // set newAccesToken
           cookieStore.set(CookieKeys.ACCESSTOKEN, newAccessToken, {
             expires: new Date(Date.now() + 15 * 60 * 1000),
@@ -102,10 +115,11 @@ api.interceptors.response.use(
 
           // replace authorization header with new token
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        }
 
-        // run original request
-        return api(originalRequest);
+          // run original request
+          console.log("run original request");
+          return api(originalRequest);
+        }
       } catch (err) {
         processQueue(err, null);
         return Promise.reject(err);

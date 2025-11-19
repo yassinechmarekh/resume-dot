@@ -6,11 +6,14 @@ export type PersonalInfoType = {
   linkedin: string;
   website: string;
   profession: string;
-  image: string;
+  image: {
+    url: string;
+    publicId: string;
+  };
 };
 
 export type ExperinceType = {
-  _id: string;
+  _id?: string;
   company: string;
   position: string;
   start_date: Date;
@@ -20,15 +23,15 @@ export type ExperinceType = {
 };
 
 export type EducationType = {
-  _id: string;
+  _id?: string;
   institution: string;
   degree: string;
-  field: string;
+  field?: string;
   graduation_date: Date;
 };
 
 export type ProjectType = {
-  _id: string;
+  _id?: string;
   name: string;
   type: string;
   description: string;

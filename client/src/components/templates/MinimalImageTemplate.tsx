@@ -12,7 +12,7 @@ const MinimalImageTemplate = ({
 }: MinimalImageTemplateProps) => {
   const formatDate = (date: Date | string) => {
     if (!date) return "";
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const dateObj = typeof date === "string" ? new Date(date) : date;
     return dateObj.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -24,26 +24,17 @@ const MinimalImageTemplate = ({
       <div className="grid grid-cols-3">
         <div className="col-span-1  py-10">
           {/* Image */}
-          {resume.personal_info?.image &&
-          typeof resume.personal_info.image === "string" ? (
-            <div className="mb-6">
-              <img
-                src={resume.personal_info.image}
-                alt="Profile"
-                className="w-32 h-32 object-cover rounded-full mx-auto"
-                style={{ background: accentColor + "70" }}
-              />
-            </div>
-          ) : resume.personal_info?.image &&
-            typeof resume.personal_info.image === "object" ? (
-            <div className="mb-6">
-              <img
-                src={URL.createObjectURL(resume.personal_info.image)}
-                alt="Profile"
-                className="w-32 h-32 object-cover rounded-full mx-auto"
-              />
-            </div>
-          ) : null}
+          {resume.personal_info.image &&
+            resume.personal_info.image.url !== "" && (
+              <div className="mb-6">
+                <img
+                  src={resume.personal_info.image.url}
+                  alt="Profile"
+                  className="w-32 h-32 object-cover rounded-full mx-auto"
+                  style={{ background: accentColor + "70" }}
+                />
+              </div>
+            )}
         </div>
 
         {/* Name + Title */}
@@ -155,7 +146,9 @@ const MinimalImageTemplate = ({
                       </h3>
                       <span className="text-xs text-zinc-500">
                         {formatDate(exp.start_date)} -{" "}
-                        {exp.is_current ? "Present" : formatDate(exp.end_date || new Date())}
+                        {exp.is_current
+                          ? "Present"
+                          : formatDate(exp.end_date || new Date())}
                       </span>
                     </div>
                     <p className="text-sm mb-2" style={{ color: accentColor }}>

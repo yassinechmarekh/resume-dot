@@ -237,14 +237,34 @@ const PersonalInfoForm = ({
                     {item.type === InputTypes.TEL ? (
                       <PhoneInput
                         placeholder={`Enter your ${item.label.toLowerCase()}`}
-                        {...field}
                         defaultCountry="MA"
+                        {...field}
+                        onChange={(value) => {
+                          field.onChange(value);
+                          setResumeData((prev) => ({
+                            ...prev,
+                            personal_info: {
+                              ...prev.personal_info,
+                              [item.key]: value,
+                            },
+                          }));
+                        }}
                       />
                     ) : (
                       <Input
                         placeholder={`Enter your ${item.label.toLowerCase()}`}
                         type={item.type}
                         {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setResumeData((prev) => ({
+                            ...prev,
+                            personal_info: {
+                              ...prev.personal_info,
+                              [item.key]: e.target.value,
+                            },
+                          }));
+                        }}
                       />
                     )}
                   </FormControl>

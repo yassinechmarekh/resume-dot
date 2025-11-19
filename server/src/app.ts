@@ -1,5 +1,5 @@
 import express from "express";
-import { HttpStatusCode } from "./utils/constants";
+import { Environment, HttpStatusCode } from "./utils/constants";
 import { errorHandler } from "./middlewares/error.middleware";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
@@ -9,6 +9,7 @@ import cors from "cors";
 import corsOptions from "./config/cors";
 import routes from "./routes/index.route";
 import passport from "./config/passport";
+import morgan from "morgan";
 
 const app = express();
 
@@ -19,6 +20,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// Morgan Middleware
+app.use(
+  morgan(process.env.NODE_ENV === Environment.DEVELOPMENT ? "dev" : "combined")
+);
 
 // Security Middlewares
 app.use(helmet());
@@ -33,7 +39,7 @@ app.use(
 app.use(passport.initialize());
 
 // Home Route
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.send("Welcome to Ai Resume Builder API.");
 });
 

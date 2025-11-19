@@ -1,9 +1,9 @@
 "use client";
 
 import { ProjectType, ResumeType } from "@/types";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { FolderIcon, Plus, Sparkles, Trash2 } from "lucide-react";
+import { FolderIcon, LoaderCircle, Plus, Sparkles, Trash2 } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -17,13 +17,19 @@ import { Textarea } from "../ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import z from "zod";
 import { updateResumeSchema } from "@/lib/schemas/resume.schema";
+import { enhanceTextAction } from "@/action/resume.action";
+import { toast } from "sonner";
 
 interface ProjectFormProps {
   form: UseFormReturn<z.infer<typeof updateResumeSchema>>;
+  resumeData: ResumeType;
+  setResumeData: Dispatch<SetStateAction<ResumeType>>;
 }
 
-const ProjectForm = ({ form }: ProjectFormProps) => {
-  const projects = form.getValues("project") || [];
+const ProjectForm = ({ form, resumeData, setResumeData }: ProjectFormProps) => {
+  // const projects = form.getValues("project") || [];
+  const projects = resumeData.project;
+  const [enhanceLoading, setEnhanceLoading] = useState<boolean[]>([]);
 
   const addProject = () => {
     const newProject: ProjectType = {
@@ -32,11 +38,16 @@ const ProjectForm = ({ form }: ProjectFormProps) => {
       description: "",
     };
     form.setValue("project", [newProject, ...projects]);
+    setResumeData((prev) => ({
+      ...prev,
+      project: [newProject, ...prev.project],
+    }));
   };
 
   const removeProject = (index: number) => {
     const updatedProjects = projects.filter((_, i) => i !== index);
     form.setValue("project", updatedProjects);
+    setResumeData((prev) => ({ ...prev, project: updatedProjects }));
   };
 
   const updateProject = (
@@ -47,6 +58,55 @@ const ProjectForm = ({ form }: ProjectFormProps) => {
     const updated = [...projects];
     updated[index] = { ...updated[index], [field]: value };
     form.setValue("project", updated);
+    setResumeData((prev) => ({ ...prev, project: updated }));
+  };
+
+  useEffect(() => {
+    setEnhanceLoading((prev) => {
+      if (projects.length > prev.length) {
+        return [...prev, ...Array(projects.length - prev.length).fill(false)];
+      } else if (projects.length < prev.length) {
+        return prev.slice(0, projects.length);
+      }
+
+      return prev;
+    });
+  }, [projects.length]);
+
+  const setLoadingFor = (index: number, value: boolean) => {
+    setEnhanceLoading((prev) => {
+      const copy = [...prev];
+      copy[index] = value;
+      return copy;
+    });
+  };
+
+  const enhancedProjectDescriptionHanlder = async (index: number) => {
+    try {
+      setLoadingFor(index, true);
+      const text = projects[index].description;
+      const result = await enhanceTextAction("project_description", text);
+
+      if (result.success) {
+        if (result.text) {
+          updateProject(index, "description", result.text.trim());
+        }
+        return;
+      } else {
+        toast.error("Internal server error", {
+          description: "Something went wrong. Please try again.",
+        });
+        return;
+      }
+    } catch (error) {
+      console.log("Enhance Project Description Hanlder Error :");
+      console.log(error);
+      toast.error("Internal server error", {
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setLoadingFor(index, false);
+    }
   };
 
   return (
@@ -175,11 +235,25 @@ const ProjectForm = ({ form }: ProjectFormProps) => {
                           }
                           variant={"purple"}
                           size={"sm"}
+                          type={"button"}
                           disabled={
-                            projects[index].description.trim() === ""
+                            projects[index].description.trim() === "" ||
+                            enhanceLoading[index]
+                          }
+                          onClick={() =>
+                            enhancedProjectDescriptionHanlder(index)
                           }
                         >
-                          <Sparkles /> Enhance With AI
+                          {enhanceLoading[index] ? (
+                            <>
+                              <LoaderCircle className={"animate-spin"} />{" "}
+                              Enhancing...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles /> Enhance With AI
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>

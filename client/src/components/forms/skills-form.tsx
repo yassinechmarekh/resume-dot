@@ -6,14 +6,19 @@ import { Button } from "../ui/button";
 import { Plus, Sparkles, X } from "lucide-react";
 import { Input } from "../ui/input";
 import { InputTypes } from "@/lib/constants";
+import { UseFormReturn } from "react-hook-form";
+import z from "zod";
+import { updateResumeSchema } from "@/lib/schemas/resume.schema";
 
 interface SkillsFormProps {
+  form: UseFormReturn<z.infer<typeof updateResumeSchema>>;
   resumeData: ResumeType;
   setResumeData: Dispatch<SetStateAction<ResumeType>>;
 }
 
-const SkillsForm = ({ resumeData, setResumeData }: SkillsFormProps) => {
+const SkillsForm = ({ form, resumeData, setResumeData }: SkillsFormProps) => {
   const skills = resumeData.skills;
+  // const skills = form.getValues("skills") || [];
   const [skill, setSkill] = useState<string>("");
 
   const addSkill = () => {
@@ -28,12 +33,14 @@ const SkillsForm = ({ resumeData, setResumeData }: SkillsFormProps) => {
       setSkill("");
       return;
     }
+    form.setValue("skills", [skill, ...skills]);
     setResumeData((prev) => ({ ...prev, skills: [skill, ...prev.skills] }));
     setSkill("");
   };
 
   const removeSkill = (index: number) => {
     const updated = skills.filter((_, i) => i !== index);
+    form.setValue("skills", updated);
     setResumeData((prev) => ({ ...prev, skills: updated }));
   };
 
@@ -63,6 +70,7 @@ const SkillsForm = ({ resumeData, setResumeData }: SkillsFormProps) => {
             className={
               "bg-blue-600 hover:bg-blue-700 text-xs xs:text-sm rounded-sm"
             }
+            type={'button'}
             onClick={addSkill}
           >
             <Plus /> Add

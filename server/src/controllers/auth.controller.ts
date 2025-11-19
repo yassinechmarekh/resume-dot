@@ -448,7 +448,7 @@ export const refreshTokenController = async (
 
     if (!refreshToken) {
       res.status(HttpStatusCode.BAD_REQUEST).json({
-        message: "Missing refresh token, please login.",
+        message: "Missing refresh token.",
       });
       return;
     }
@@ -458,13 +458,6 @@ export const refreshTokenController = async (
       process.env.REFRESH_TOKEN_SECRET_KEY as string
     ) as JWTPayloadType;
 
-    if (!decoded || !decoded.userId) {
-      res.status(HttpStatusCode.BAD_REQUEST).json({
-        message: "Invalid refresh token.",
-      });
-      return;
-    }
-
     const user = await getUserByIdService(decoded.userId);
 
     const newAccessToken = generateAccessToken(user._id);
@@ -473,6 +466,18 @@ export const refreshTokenController = async (
       accessToken: newAccessToken,
     });
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      res.status(HttpStatusCode.FORBIDDEN).json({
+        message: "Expired token.",
+      });
+      return;
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(HttpStatusCode.FORBIDDEN).json({
+        message: "Invalid token provided.",
+      });
+      return;
+    }
     console.log("Refresh Token Controller Error :");
     console.log(error);
     next(error);

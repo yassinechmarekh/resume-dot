@@ -3,7 +3,7 @@
 import Container from "@/components/container";
 import { Button } from "@/components/ui/button";
 import resumes from "@/data/resumes";
-import { ResumeType, TemplateType } from "@/types";
+import { ActionResponseType, ResumeType, TemplateType } from "@/types";
 import {
   ArrowLeftIcon,
   Briefcase,
@@ -45,34 +45,17 @@ import SkillsForm from "@/components/forms/skills-form";
 import ShareResume from "@/components/dashboard/share-resume";
 import { useReactToPrint } from "react-to-print";
 import { Parag } from "@/components/text";
+import {
+  changeResumeVisibilityAction,
+  updateResumeAction,
+} from "@/action/resume.action";
 
-const BuilderRoute = () => {
-  const { resumeId } = useParams();
-  const [resumeData, setResumeData] = useState<ResumeType>({
-    _id: resumeId ? resumeId.toString() : "",
-    userId: "",
-    personal_info: {
-      full_name: "",
-      email: "",
-      phone: "",
-      location: "",
-      linkedin: "",
-      website: "",
-      profession: "",
-      image: "",
-    },
-    title: "",
-    public: true,
-    professional_summary: "",
-    skills: [],
-    experience: [],
-    education: [],
-    template: "classic",
-    accent_color: "",
-    project: [],
-    updatedAt: new Date(Date.now()),
-    createdAt: new Date(Date.now()),
-  });
+interface BuilderRouteProps {
+  resume: ResumeType;
+}
+
+const BuilderRoute = ({ resume }: BuilderRouteProps) => {
+  const [resumeData, setResumeData] = useState<ResumeType>(resume);
 
   const [activeSectionIndex, setActiveSectionIndex] = useState<number>(0);
 
@@ -87,9 +70,12 @@ const BuilderRoute = () => {
 
   const activeSection = sections[activeSectionIndex];
 
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<TemplateType>("classic");
-  const [selectedColor, setSelectedColor] = useState<string>("#3B82F6");
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>(
+    resume.template || "classic"
+  );
+  const [selectedColor, setSelectedColor] = useState<string>(
+    resume.accent_color || "#3B82F6"
+  );
 
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [removeBackground, setRemoveBackground] = useState<boolean>(false);
@@ -107,94 +93,92 @@ const BuilderRoute = () => {
         linkedin: resumeData.personal_info.linkedin,
         website: resumeData.personal_info.website,
       },
-      experience: resumeData.experience,
-      education: resumeData.education,
+      experience: resumeData.experience.map((exp) => ({
+        ...exp,
+        start_date: new Date(exp.start_date),
+        end_date: exp.end_date ? new Date(exp.end_date) : undefined,
+      })),
+      education: resumeData.education.map((edu) => ({
+        ...edu,
+        graduation_date: new Date(edu.graduation_date),
+      })),
       project: resumeData.project,
       skills: resumeData.skills,
     },
   });
 
   useEffect(() => {
-    const loadExistingResume = async () => {
-      const resume = resumes.find((resume) => resume._id === resumeId);
-      if (resume) {
-        setResumeData(resume);
-        document.title = resume.title;
-
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
-        form.setValue("professional_summary", resume.professional_summary);
-        form.setValue(
-          "personal_info.full_name",
-          resume.personal_info.full_name
-        );
-        form.setValue("personal_info.email", resume.personal_info.email);
-        form.setValue("personal_info.phone", resume.personal_info.phone);
-        form.setValue("personal_info.location", resume.personal_info.location);
-        form.setValue(
-          "personal_info.profession",
-          resume.personal_info.profession
-        );
-        form.setValue("personal_info.linkedin", resume.personal_info.linkedin);
-        form.setValue("personal_info.website", resume.personal_info.website);
-        form.setValue("experience", resume.experience);
-        form.setValue("education", resume.education);
-        form.setValue("project", resume.project);
-        form.setValue("skills", resume.skills);
-
-        if (
-          resume.personal_info.image &&
-          typeof resume.personal_info.image === "string"
-        ) {
-          const file = await urlToFile(resume.personal_info.image);
-          form.setValue("personal_info.image", file);
-          setProfileImage(file);
-        }
-
-        if (resume.accent_color) {
-          setSelectedColor(resume.accent_color);
-        }
-
-        if (resume.template) {
-          setSelectedTemplate(resume.template);
-        }
+    const loadImage = async () => {
+      if (resumeData.personal_info.image.url !== "") {
+        const file = await urlToFile(resumeData.personal_info.image.url);
+        form.setValue("personal_info.image", file);
+        setProfileImage(file);
       }
     };
 
-    loadExistingResume();
+    loadImage();
   }, []);
-
-  useEffect(() => {
-    const subscription = form.watch((values) => {
-      setResumeData((prev) => ({
-        ...prev,
-        ...(values as Partial<ResumeType>),
-      }));
-    });
-
-    return () => subscription.unsubscribe();
-  }, [form]);
 
   useEffect(() => {
     if (profileImage) {
       const imageURL = URL.createObjectURL(profileImage);
       setResumeData((prev) => ({
         ...prev,
-        personal_info: { ...prev.personal_info, image: imageURL },
+        personal_info: {
+          ...prev.personal_info,
+          image: {
+            url: imageURL,
+            publicId: resumeData.personal_info.image.publicId,
+          },
+        },
       }));
 
       return () => URL.revokeObjectURL(imageURL);
     } else {
       setResumeData((prev) => ({
         ...prev,
-        personal_info: { ...prev.personal_info, image: "" },
+        personal_info: {
+          ...prev.personal_info,
+          image: {
+            url: "",
+            publicId: "",
+          },
+        },
       }));
     }
-  }, [profileImage, selectedTemplate]);
+  }, [profileImage]);
 
   const updateResumeHandler = (data: z.infer<typeof updateResumeSchema>) => {
     try {
-      console.log(data);
+      toast.promise<ActionResponseType>(
+        async () => {
+          const {
+            personal_info: { image, ...restPersonalInfo },
+            ...rest
+          } = resumeData;
+          const savedData = {
+            ...rest,
+            personal_info: restPersonalInfo,
+          };
+          const result = await updateResumeAction(
+            savedData as Partial<ResumeType>,
+            resumeData._id,
+            profileImage ? { profileImage, removeBackground } : null
+          );
+
+          if (!result.success) {
+            throw result;
+          }
+
+          return result;
+        },
+        {
+          loading: "Updating...",
+          success: (result) => result.message || "Resume Updated successfully.",
+          error: (result) =>
+            result.message || "Internal server error. Please try again.",
+        }
+      );
     } catch (error) {
       toast.error("Internal server error", {
         description: "Something went wrong. Please try again.",
@@ -233,12 +217,38 @@ const BuilderRoute = () => {
     }
   }, [form.formState.errors]);
 
-  useEffect(() => {
-    console.log("Form Education :", form.getValues("education"));
-  }, [form.getValues("education")]);
-
   const changeResumeVisibility = async () => {
-    setResumeData((prev) => ({ ...prev, public: !prev.public }));
+    try {
+      toast.promise<ActionResponseType>(
+        async () => {
+          const result = await changeResumeVisibilityAction(
+            resumeData._id,
+            resumeData.title,
+            !resumeData.public
+          );
+
+          if (!result.success) {
+            return result;
+          }
+
+          setResumeData((prev) => ({ ...prev, public: !prev.public }));
+
+          return result;
+        },
+        {
+          loading: "Changing visiblity...",
+          success: (result) => result.message,
+          error: (result) =>
+            result.message || "Internal server error. Please try again.",
+        }
+      );
+    } catch (error) {
+      console.log("Change Resume Visibilty Handler :");
+      console.log(error);
+      toast.error("Internal server error.", {
+        description: "Something went wrong. Please try again.",
+      });
+    }
   };
 
   const resumePdfRef = useRef<HTMLDivElement | null>(null);
@@ -347,30 +357,39 @@ const BuilderRoute = () => {
                 )}
 
                 {activeSection.id === "summary" && (
-                  <ProfessionnalSummary form={form} />
+                  <ProfessionnalSummary
+                    form={form}
+                    setResumeData={setResumeData}
+                  />
                 )}
 
                 {activeSection.id === "experience" && (
                   <ExperienceForm
                     form={form}
                     resumeData={resumeData}
+                    setResumeData={setResumeData}
                   />
                 )}
 
                 {activeSection.id === "education" && (
                   <EducationFrom
                     form={form}
+                    resumeData={resumeData}
+                    setResumeData={setResumeData}
                   />
                 )}
 
                 {activeSection.id === "projects" && (
                   <ProjectForm
                     form={form}
+                    resumeData={resumeData}
+                    setResumeData={setResumeData}
                   />
                 )}
 
                 {activeSection.id === "skills" && (
                   <SkillsForm
+                    form={form}
                     resumeData={resumeData}
                     setResumeData={setResumeData}
                   />

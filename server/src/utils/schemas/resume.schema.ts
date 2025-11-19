@@ -16,11 +16,10 @@ export const PersonalInfoSchema = z.object({
 export const ExperienceSchema = z.object({
   company: z.string().min(1, "Company is required"),
   position: z.string().min(1, "Position is required"),
-  start_date: z.date({
+  start_date: z.coerce.date({
     error: "Experience start date is required.",
   }),
-  end_date: z
-    .date({
+  end_date: z.coerce.date({
       error: "Experience end date is required.",
     })
     .optional(),
@@ -32,7 +31,7 @@ export const EducationSchema = z.object({
   institution: z.string().min(1, "Institution name is required"),
   degree: z.string().min(1, "Degree is required"),
   field: z.string().optional(),
-  graduation_date: z.date({
+  graduation_date: z.coerce.date({
     error: "The graduation date is required.",
   }),
 });
@@ -48,8 +47,7 @@ export const TemplateSchema = z
   .enum(["classic", "minimal", "modern", "minimal-image"], {
     error:
       "Invalid template type. Allowed values are: classic, minimal, modern, and minimal-image.",
-  })
-  .default("classic");
+  });
 
 // --- Resume global schema ---
 export const ResumeSchema = z.object({
@@ -92,7 +90,7 @@ export const UpdateResumeSchema = z.object({
       "Accent color must be a valid HEX code (e.g. #ff5733)."
     )
     .optional(),
-  personel_info: z
+  personal_info: z
     .object({
       full_name: z
         .string({ error: "Full name must be a string." })

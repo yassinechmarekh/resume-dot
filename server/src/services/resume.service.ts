@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { IResume, Resume } from "../models/Resume.model";
+import { PersonalInfoType } from "../types";
 
 export const createResumeService = async (
   data: Partial<IResume>
@@ -29,7 +30,9 @@ export const getUserResumeByIdService = async (
 export const updateResumeService = async (
   resumeId: Types.ObjectId,
   userId: Types.ObjectId,
-  updatedData: Partial<IResume>
+  updatedData: Partial<Omit<IResume, "personal_info">> & {
+    personal_info?: Partial<PersonalInfoType>;
+  }
 ): Promise<IResume> => {
   const resume = await Resume.findById(resumeId);
 
@@ -41,7 +44,18 @@ export const updateResumeService = async (
     throw new Error("Access denied. Only owner user can update this resume.");
   }
 
-  const updatedResume = await Resume.findByIdAndUpdate(resume._id, updatedData);
+  if (updatedData.personal_info) {
+    updatedData.personal_info = {
+      ...resume.personal_info,
+      ...updatedData.personal_info,
+    };
+  }
+
+  const updatedResume = await Resume.findByIdAndUpdate(
+    resume._id,
+    updatedData,
+    { new: true }
+  );
 
   if (!updatedResume) {
     throw new Error("The resume update field.");

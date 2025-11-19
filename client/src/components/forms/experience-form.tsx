@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Briefcase, LoaderCircle, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { ExperinceType, ResumeType } from "@/types";
 import { Label } from "../ui/label";
@@ -9,7 +9,7 @@ import { InputTypes } from "@/lib/constants";
 import { FormDescription } from "../ui/form";
 import { Checkbox } from "../ui/checkbox";
 import { Textarea } from "../ui/textarea";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -19,14 +19,23 @@ import {
 import { UseFormReturn } from "react-hook-form";
 import z from "zod";
 import { updateResumeSchema } from "@/lib/schemas/resume.schema";
+import { enhanceTextAction } from "@/action/resume.action";
+import { toast } from "sonner";
 
 interface ExperienceFormProps {
   resumeData: ResumeType;
+  setResumeData: Dispatch<SetStateAction<ResumeType>>;
   form: UseFormReturn<z.infer<typeof updateResumeSchema>>;
 }
 
-const ExperienceForm = ({ resumeData, form }: ExperienceFormProps) => {
-  const experiences = form.getValues("experience") || [];
+const ExperienceForm = ({
+  resumeData,
+  setResumeData,
+  form,
+}: ExperienceFormProps) => {
+  // const experiences = form.getValues("experience") || [];
+  const experiences = resumeData.experience;
+  const [enhanceLoading, setEnhanceLoading] = useState<boolean[]>([]);
 
   const addExperience = () => {
     const newExperience: ExperinceType = {
@@ -38,11 +47,19 @@ const ExperienceForm = ({ resumeData, form }: ExperienceFormProps) => {
       is_current: false,
     };
     form.setValue("experience", [newExperience, ...experiences]);
+    setResumeData((prev) => ({
+      ...prev,
+      experience: [newExperience, ...prev.experience],
+    }));
   };
 
   const removeExperience = (index: number) => {
     const updatedExperiences = experiences.filter((_, i) => i !== index);
     form.setValue("experience", updatedExperiences);
+    setResumeData((prev) => ({
+      ...prev,
+      experience: updatedExperiences,
+    }));
   };
 
   const updateExperience = (
@@ -53,6 +70,64 @@ const ExperienceForm = ({ resumeData, form }: ExperienceFormProps) => {
     const updated = [...experiences];
     updated[index] = { ...updated[index], [field]: value };
     form.setValue("experience", updated);
+    setResumeData((prev) => ({
+      ...prev,
+      experience: updated,
+    }));
+  };
+
+  useEffect(() => {
+    setEnhanceLoading((prev) => {
+      if (experiences.length > prev.length) {
+        return [
+          ...prev,
+          ...Array(experiences.length - prev.length).fill(false),
+        ];
+      } else if (experiences.length < prev.length) {
+        return prev.slice(0, experiences.length);
+      }
+
+      return prev;
+    });
+  }, [experiences.length]);
+
+  const setLoadingFor = (index: number, value: boolean) => {
+    setEnhanceLoading((prev) => {
+      const copy = [...prev];
+      copy[index] = value;
+      return copy;
+    });
+  };
+
+  const enhanceExperienceDescriptionHandler = async (index: number) => {
+    try {
+      setLoadingFor(index, true);
+      const text = experiences[index].description;
+      const result = await enhanceTextAction(
+        "experience_job_description",
+        text
+      );
+
+      if (result.success) {
+        if (result.text) {
+          updateExperience(index, "description", result.text.trim());
+        }
+        return;
+      } else {
+        toast.error("Internal server error", {
+          description: "Something went wrong. Please try again.",
+        });
+        return;
+      }
+    } catch (error) {
+      console.log("Enhance Experience Description Hanlder Error :");
+      console.log(error);
+      toast.error("Internal server error", {
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setLoadingFor(index, false);
+    }
   };
 
   return (
@@ -158,20 +233,16 @@ const ExperienceForm = ({ resumeData, form }: ExperienceFormProps) => {
                       <Input
                         type={InputTypes.MONTH}
                         className={"h-8 text-xs xs:text-sm peer"}
-                        value={
-                          experience.start_date
-                            ? new Date(experience.start_date)
-                                .toISOString()
-                                .slice(0, 7)
-                            : ""
-                        }
-                        onChange={(e) =>
+                        value={new Date(experience.start_date)
+                          .toISOString()
+                          .slice(0, 7)}
+                        onChange={(e) => {
                           updateExperience(
                             index,
                             "start_date",
                             new Date(e.target.value)
-                          )
-                        }
+                          );
+                        }}
                       />
                       <Label
                         className={
@@ -251,13 +322,26 @@ const ExperienceForm = ({ resumeData, form }: ExperienceFormProps) => {
                             "text-[10px] xs:text-xs [&_svg]:size-3 h-6 rounded-sm"
                           }
                           variant={"purple"}
-                          type={'button'}
+                          type={"button"}
                           size={"sm"}
                           disabled={
-                            resumeData.experience[index].description.trim() === ""
+                            resumeData.experience[index].description.trim() ===
+                              "" || enhanceLoading[index]
+                          }
+                          onClick={() =>
+                            enhanceExperienceDescriptionHandler(index)
                           }
                         >
-                          <Sparkles /> Enhance With AI
+                          {enhanceLoading[index] ? (
+                            <>
+                              <LoaderCircle className={"animate-spin"} />{" "}
+                              Enhancing...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles /> Enhance With AI
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>

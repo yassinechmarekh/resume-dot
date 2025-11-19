@@ -33,14 +33,42 @@ import {
 } from "../ui/alert-dialog";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
+import { Dispatch, SetStateAction } from "react";
+import { deleteResumeAction } from "@/action/resume.action";
+import { toast } from "sonner";
 
 interface ResumeCardProps {
   baseColor: string;
   resume: ResumeType;
+  setResumes: Dispatch<SetStateAction<ResumeType[] | null>>;
 }
 
-const ResumeCard = ({ baseColor, resume }: ResumeCardProps) => {
+const ResumeCard = ({ baseColor, resume, setResumes }: ResumeCardProps) => {
   const router = useRouter();
+
+  const deleteResumeHanlder = async (resumeId: string) => {
+    try {
+      const result = await deleteResumeAction(resumeId);
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      setResumes((prev) => {
+        if (!prev) return prev;
+        return prev.filter((resume) => resume._id !== resumeId);
+      });
+
+      toast.success(result.message);
+    } catch (error) {
+      console.log("Delete Resume Handler Error :");
+      console.log(error);
+      toast.error("Internal server error.", {
+        description: "Something went wrong. Please try again.",
+      });
+    }
+  };
 
   return (
     <div
@@ -59,7 +87,7 @@ const ResumeCard = ({ baseColor, resume }: ResumeCardProps) => {
       />
       <p
         className={
-          "text-xs sm:text-sm text-center px-2 group-hover:scale-105 hover-effect"
+          "text-xs sm:text-sm text-center line-clamp-2 px-2 group-hover:scale-105 hover-effect"
         }
         style={{ color: baseColor }}
       >
@@ -71,7 +99,7 @@ const ResumeCard = ({ baseColor, resume }: ResumeCardProps) => {
         }
         style={{ color: baseColor + "90" }}
       >
-        Update on {resume.updatedAt.toLocaleDateString()}
+        Update on {new Date(resume.updatedAt).toLocaleDateString()}
       </p>
       <div
         className={
@@ -98,7 +126,11 @@ const ResumeCard = ({ baseColor, resume }: ResumeCardProps) => {
               </DialogDescription>
             </DialogHeader>
 
-            <UpdateResumeTitleForm resumeTitle={resume.title} />
+            <UpdateResumeTitleForm
+              resumeId={resume._id}
+              resumeTitle={resume.title}
+              setResumes={setResumes}
+            />
           </DialogContent>
         </Dialog>
 
@@ -128,7 +160,10 @@ const ResumeCard = ({ baseColor, resume }: ResumeCardProps) => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction className="bg-red-600 hover:bg-red-700 text-white">
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => deleteResumeHanlder(resume._id)}
+              >
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

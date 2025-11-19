@@ -24,10 +24,17 @@ import {
   FileUploaderItem,
 } from "../ui/file-upload";
 import { InputTypes } from "@/lib/constants";
-import { uploadResumeSchema } from "@/lib/schemas/resume.schema";
+import { UploadResumeSchema } from "@/lib/schemas/resume.schema";
+import pdfToText from "react-pdftotext";
+import { ActionResponseType } from "@/types";
+import { uploadResumeAction } from "@/action/resume.action";
+import { useRouter } from "next/navigation";
+import { DialogClose } from "../ui/dialog";
 
 const UploadResumeForm = () => {
   const [file, setFile] = useState<File | null>(null);
+
+  const router = useRouter();
 
   const dropZoneConfig = {
     accept: {
@@ -38,8 +45,8 @@ const UploadResumeForm = () => {
     maxFiles: 1,
   };
 
-  const form = useForm<z.infer<typeof uploadResumeSchema>>({
-    resolver: zodResolver(uploadResumeSchema),
+  const form = useForm<z.infer<typeof UploadResumeSchema>>({
+    resolver: zodResolver(UploadResumeSchema),
     defaultValues: {
       title: "",
       resume: undefined,
@@ -55,9 +62,34 @@ const UploadResumeForm = () => {
     form.trigger("resume");
   };
 
-  const uploadResumeHandler = (data: z.infer<typeof uploadResumeSchema>) => {
+  const uploadResumeHandler = async (
+    data: z.infer<typeof UploadResumeSchema>
+  ) => {
     try {
-      console.log(data);
+      data.resume = await pdfToText(data.resume);
+      toast.promise<ActionResponseType>(
+        async () => {
+          const result = await uploadResumeAction(data);
+
+          if (!result.success) {
+            throw result;
+          }
+
+          return result;
+        },
+        {
+          loading: "Creating...",
+          success: (result) => {
+            if (result.redirectTo) {
+              router.push(result.redirectTo);
+            }
+            return result.message;
+          },
+          error: (result) => {
+            return result.message || "Something went wrong. Please try again.";
+          },
+        }
+      );
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Intenal server error", {
@@ -131,9 +163,11 @@ const UploadResumeForm = () => {
             </FormItem>
           )}
         />
-        <Button variant={"primary"} type="submit" className={"w-full"}>
-          Upload
-        </Button>
+        <DialogClose asChild>
+          <Button variant={"primary"} type="submit" className={"w-full"}>
+            Upload
+          </Button>
+        </DialogClose>
       </form>
     </Form>
   );

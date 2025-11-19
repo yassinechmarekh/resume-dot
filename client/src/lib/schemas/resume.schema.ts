@@ -61,11 +61,11 @@ export const ResumeSchema = z.object({
   project: z.array(ProjectSchema).optional(),
 });
 
-export const createResumeSchema = ResumeSchema.pick({
+export const CreateResumeSchema = ResumeSchema.pick({
   title: true,
 });
 
-export const uploadResumeSchema = z.object({
+export const UploadResumeSchema = z.object({
   title: z.string().min(1, "Title is required"),
   resume: z.any().refine((file) => file instanceof File, {
     message: "Please upload a valid PDF file",

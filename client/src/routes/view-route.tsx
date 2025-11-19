@@ -1,21 +1,14 @@
 import Container from "@/components/container";
 import ResumePreview from "@/components/dashboard/resume-preview";
 import { Parag } from "@/components/text";
-import { Button } from "@/components/ui/button";
-import resumes from "@/data/resumes";
+import { ResumeType } from "@/types";
 import { ScreenShareOff } from "lucide-react";
-import { notFound } from "next/navigation";
 
 interface ViewRouteProps {
-  resumeId: string;
+  resume: ResumeType;
 }
 
-const ViewRoute = ({ resumeId }: ViewRouteProps) => {
-  const resume = resumes.find((r) => r._id === resumeId);
-
-  if (!resume || !resume.public) {
-    return notFound();
-  }
+const ViewRoute = ({ resume }: ViewRouteProps) => {
   return (
     <div className={"bg-gray-100 min-h-screen"}>
       <Container className={"flex items-center justify-center min-h-screen"}>

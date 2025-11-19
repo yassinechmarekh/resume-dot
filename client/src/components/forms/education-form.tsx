@@ -19,10 +19,13 @@ import { updateResumeSchema } from "@/lib/schemas/resume.schema";
 
 interface EducationFromProps {
   form: UseFormReturn<z.infer<typeof updateResumeSchema>>;
+  resumeData: ResumeType;
+  setResumeData: Dispatch<SetStateAction<ResumeType>>;
 }
 
-const EducationFrom = ({ form }: EducationFromProps) => {
-  const educationItems = form.getValues("education") || [];
+const EducationFrom = ({ form, resumeData, setResumeData }: EducationFromProps) => {
+  // const educationItems = form.getValues("education") || [];
+  const educationItems = resumeData.education;
 
   const addEducationItem = () => {
     const newEducationItem: EducationType = {
@@ -31,13 +34,17 @@ const EducationFrom = ({ form }: EducationFromProps) => {
       field: "",
       graduation_date: new Date(),
     };
-    const updated = [newEducationItem, ...educationItems];
-    form.setValue("education", updated);
+    form.setValue("education", [newEducationItem, ...educationItems]);
+    setResumeData((prev) => ({
+      ...prev,
+      education: [newEducationItem, ...prev.education],
+    }));
   };
 
   const removeEducationItem = (index: number) => {
     const updatedEducationItems = educationItems.filter((_, i) => i !== index);
     form.setValue("education", updatedEducationItems);
+    setResumeData((prev) => ({ ...prev, education: updatedEducationItems }));
   };
 
   const updateEducationItem = (
@@ -48,7 +55,7 @@ const EducationFrom = ({ form }: EducationFromProps) => {
     const updated = [...educationItems];
     updated[index] = { ...updated[index], [field]: value };
     form.setValue("education", updated);
-    console.log("updated education item", form.getValues("education"));
+    setResumeData((prev) => ({ ...prev, education: updated }));
   };
 
   return (

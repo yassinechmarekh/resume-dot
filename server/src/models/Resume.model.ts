@@ -23,6 +23,7 @@ export interface IResume extends Document {
   skills: string[];
   createdAt: Date;
   updatedAt: Date;
+  __v?: number;
 }
 
 const ResumeSchema = new Schema<IResume>(
@@ -164,5 +165,12 @@ const ResumeSchema = new Schema<IResume>(
   },
   { timestamps: true }
 );
+
+ResumeSchema.set("toJSON", {
+  transform: (_doc, ret) => {
+    delete ret.__v;
+    return ret;
+  },
+});
 
 export const Resume = model<IResume>("Resume", ResumeSchema);
