@@ -3,7 +3,6 @@ import "server-only";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { cookies } from "next/headers";
 import { CookieKeys, HttpStatusCode } from "./constants";
-import { redirect } from "next/navigation";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
@@ -31,24 +30,6 @@ api.interceptors.request.use(
   }
 );
 
-// ➤ Variables to avoid multiple refreshes
-let isRefreshing = false; // This variable prevents multiple simultaneous calls to refresh-token.
-let failedQueue: {
-  resolve: (value?: unknown) => void;
-  reject: (reason?: unknown) => void;
-}[] = []; // This is a queue of all requests that failed while refresh-token was in progress.
-
-const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-};
-
 api.interceptors.response.use(
   async (
     response: AxiosResponse & {
@@ -56,25 +37,12 @@ api.interceptors.response.use(
     }
   ) => {
     const originalRequest = response.config; // We recover the original request that failed
+
     if (
       response.status === HttpStatusCode.UNAUTHORIZED &&
-      originalRequest &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
-
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
-
-      isRefreshing = true;
 
       try {
         const cookieStore = await cookies();
@@ -94,37 +62,49 @@ api.interceptors.response.use(
           cookieStore.delete(CookieKeys.ACCESSTOKEN);
           cookieStore.delete(CookieKeys.REFRESHTOKEN);
 
-          redirect("/auth/login");
-        } else {
-          const newAccessToken = response.data.accessToken;
-
-          if (!newAccessToken) {
-            cookieStore.delete(CookieKeys.ACCESSTOKEN);
-            cookieStore.delete(CookieKeys.REFRESHTOKEN);
-
-            redirect("/auth/login");
-          }
-
-          // set newAccesToken
-          cookieStore.set(CookieKeys.ACCESSTOKEN, newAccessToken, {
-            expires: new Date(Date.now() + 15 * 60 * 1000),
-          });
-
-          // launch all pending requests with the new token
-          processQueue(null, newAccessToken);
-
-          // replace authorization header with new token
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-          // run original request
-          console.log("run original request");
-          return api(originalRequest);
+          return response;
         }
+
+        const newAccessToken = response.data.accessToken;
+
+        if (!newAccessToken) {
+          cookieStore.delete(CookieKeys.ACCESSTOKEN);
+          cookieStore.delete(CookieKeys.REFRESHTOKEN);
+
+          return response;
+        }
+
+        // set newAccesToken
+        await axios
+          .post(
+            `${process.env.NEXT_PUBLIC_CLIENT_DOMAIN}/api/auth/set-access-token`,
+            {
+              accessToken: newAccessToken,
+            }
+          );
+
+
+        // replace authorization header with new token
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        // run original request
+        const retryConfig = {
+          ...originalRequest,
+          headers: {
+            ...originalRequest.headers,
+            Authorization: `Bearer ${newAccessToken}`,
+          },
+          _retry: true,
+        };
+        return axios({
+          ...retryConfig,
+          baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+          withCredentials: true,
+          validateStatus: () => true,
+        });
       } catch (err) {
-        processQueue(err, null);
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
+        console.error("Error in token refresh:", err);
+        return response;
       }
     }
 

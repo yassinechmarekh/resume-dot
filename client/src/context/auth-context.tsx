@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const newToken = refreshResponse.data.accessToken;
         Cookies.set(CookieKeys.ACCESSTOKEN, newToken, {
-          expires: 15 / (24 * 60),
+          expires: new Date(15 * 60 * 1000),
         });
 
         result = await makeLogoutRequest(newToken);
