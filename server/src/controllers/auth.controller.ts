@@ -114,6 +114,9 @@ export const loginController = async (
         httpOnly: true,
         secure: process.env.NODE_ENV === Environment.PRODUCTION,
         maxAge: 30 * 24 * 60 * 60 * 1000,
+        sameSite:
+          process.env.NODE_ENV === Environment.PRODUCTION ? "none" : "lax",
+        path: "/",
       })
       .json({
         accessToken,
@@ -420,6 +423,9 @@ export const logoutController = async (
       .clearCookie(CookieKeys.REFRESH_TOKEN, {
         httpOnly: true,
         secure: process.env.NODE_ENV === Environment.PRODUCTION,
+        sameSite:
+          process.env.NODE_ENV === Environment.PRODUCTION ? "none" : "lax",
+        path: "/",
       })
       .status(HttpStatusCode.OK)
       .json({
