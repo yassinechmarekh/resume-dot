@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     // set le cookie
     const cookieStore = await cookies();
     cookieStore.set(CookieKeys.ACCESSTOKEN, accessToken, {
-      expires: new Date(Date.now() + 15 * 60 * 1000),
+      maxAge: 30 * 24 * 60 * 60,
     });
 
     return NextResponse.json({ ok: true }, { status: HttpStatusCode.OK });

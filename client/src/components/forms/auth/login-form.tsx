@@ -73,7 +73,7 @@ const LoginForm = () => {
       }
 
       Cookies.set(CookieKeys.ACCESSTOKEN, accessToken, {
-        expires: new Date(Date.now() + 15 * 60 * 1000),
+        expires: 30,
       });
 
       await fetchUser();

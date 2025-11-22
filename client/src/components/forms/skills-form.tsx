@@ -18,7 +18,6 @@ interface SkillsFormProps {
 
 const SkillsForm = ({ form, resumeData, setResumeData }: SkillsFormProps) => {
   const skills = resumeData.skills;
-  // const skills = form.getValues("skills") || [];
   const [skill, setSkill] = useState<string>("");
 
   const addSkill = () => {

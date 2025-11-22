@@ -9,7 +9,7 @@ export default async function proxy(req: NextRequest) {
   const isLoggedIn = async (): Promise<boolean> => {
     const accessToken = req.cookies.get(CookieKeys.ACCESSTOKEN)?.value;
 
-    if(!accessToken) {
+    if (!accessToken) {
       return false;
     }
 

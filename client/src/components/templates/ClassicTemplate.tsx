@@ -7,14 +7,6 @@ interface ClassicTemplateProps {
 }
 
 const ClassicTemplate = ({ resume, accentColor }: ClassicTemplateProps) => {
-  // const formatDate = (date: Date) => {
-  //   if (!date) return "";
-  //   return date.toLocaleDateString("en-US", {
-  //     year: "numeric",
-  //     month: "short",
-  //   });
-  // };
-
   const formatDate = (date: Date | string) => {
     if (!date) return "";
     const dateObj = typeof date === 'string' ? new Date(date) : date;

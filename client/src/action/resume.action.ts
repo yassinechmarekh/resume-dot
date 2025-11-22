@@ -2,7 +2,6 @@
 
 import api from "@/lib/axios";
 import {
-  CookieKeys,
   DashboardPages,
   HttpStatusCode,
   Routes,
@@ -12,7 +11,6 @@ import {
   UploadResumeSchema,
 } from "@/lib/schemas/resume.schema";
 import { ActionResponseType, ResumeType } from "@/types";
-import { cookies } from "next/headers";
 import z from "zod";
 
 export const createResumeAction = async (

@@ -2,12 +2,10 @@
 
 import Container from "@/components/container";
 import { Button } from "@/components/ui/button";
-import resumes from "@/data/resumes";
 import { ActionResponseType, ResumeType, TemplateType } from "@/types";
 import {
   ArrowLeftIcon,
   Briefcase,
-  Check,
   ChevronLeft,
   ChevronRight,
   DownloadIcon,
@@ -16,19 +14,15 @@ import {
   FileText,
   FolderIcon,
   GraduationCap,
-  Layout,
-  Palette,
   ScreenShareOff,
-  Share2Icon,
   Sparkles,
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TemplateSelector from "@/components/dashboard/template-selector";
 import ColorPicker from "@/components/dashboard/color-picker";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import z from "zod";
 import { updateResumeSchema } from "@/lib/schemas/resume.schema";
 import { zodResolver } from "@hookform/resolvers/zod";

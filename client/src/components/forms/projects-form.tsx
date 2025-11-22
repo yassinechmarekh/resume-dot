@@ -27,7 +27,6 @@ interface ProjectFormProps {
 }
 
 const ProjectForm = ({ form, resumeData, setResumeData }: ProjectFormProps) => {
-  // const projects = form.getValues("project") || [];
   const projects = resumeData.project;
   const [enhanceLoading, setEnhanceLoading] = useState<boolean[]>([]);
 

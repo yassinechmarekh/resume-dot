@@ -5,8 +5,13 @@ import { Parag } from "@/components/text";
 import { Button } from "@/components/ui/button";
 import { AuthPages, Routes } from "@/lib/constants";
 import { AlertCircle, Mail } from "lucide-react";
+import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Reset password page - Resume."
+}
 
 const ExpiredLink = () => {
   return (

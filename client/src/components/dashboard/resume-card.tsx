@@ -10,10 +10,8 @@ import {
 import { useRouter } from "next/navigation";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -31,8 +29,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
 import { Dispatch, SetStateAction } from "react";
 import { deleteResumeAction } from "@/action/resume.action";
 import { toast } from "sonner";

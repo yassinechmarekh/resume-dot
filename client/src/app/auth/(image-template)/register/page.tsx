@@ -1,5 +1,10 @@
 import Container from "@/components/container";
 import RegisterForm from "@/components/forms/auth/register-form";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Register page - Resume."
+}
 
 const RegisterPage = () => {
   return (

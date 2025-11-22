@@ -1,5 +1,10 @@
 import Container from "@/components/container";
 import VerifyEmailForm from "@/components/forms/auth/verify-email-form";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Verify email page - Resume."
+}
 
 interface VerifyEmailPageProps {
   params: Promise<{ userId: string }>;

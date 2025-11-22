@@ -207,19 +207,3 @@ export const resetPasswordAction = async (
     };
   }
 };
-
-export const isLoggedInAction = async (): Promise<boolean> => {
-  try {
-    const response = await api.get(`/auth/verify-token`);
-
-    if (response.status !== HttpStatusCode.OK) {
-      return response.data.isAuthenticated || false;
-    }
-
-    return response.data.isAuthenticated;
-  } catch (error) {
-    console.log("IsLoaggedIn Action Error :");
-    console.log(error);
-    return false;
-  }
-};

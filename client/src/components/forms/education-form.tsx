@@ -1,9 +1,9 @@
 "use client";
 
 import { EducationType, ResumeType } from "@/types";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { Button } from "../ui/button";
-import { GraduationCap, Plus, Sparkles, Trash2 } from "lucide-react";
+import { GraduationCap, Plus, Trash2 } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -24,7 +24,6 @@ interface EducationFromProps {
 }
 
 const EducationFrom = ({ form, resumeData, setResumeData }: EducationFromProps) => {
-  // const educationItems = form.getValues("education") || [];
   const educationItems = resumeData.education;
 
   const addEducationItem = () => {

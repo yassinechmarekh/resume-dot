@@ -2,7 +2,6 @@
 
 import { ResumeType } from "@/types";
 import { useEffect, useState } from "react";
-import allResumes from "@/data/resumes";
 import ResumeCard from "@/components/dashboard/resume-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, FileUser } from "lucide-react";

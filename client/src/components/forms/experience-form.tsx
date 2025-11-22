@@ -33,7 +33,6 @@ const ExperienceForm = ({
   setResumeData,
   form,
 }: ExperienceFormProps) => {
-  // const experiences = form.getValues("experience") || [];
   const experiences = resumeData.experience;
   const [enhanceLoading, setEnhanceLoading] = useState<boolean[]>([]);
 

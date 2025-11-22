@@ -1,5 +1,10 @@
 import Container from "@/components/container";
 import ForgotPasswordForm from "@/components/forms/auth/forgot-password-form";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Forgot password page - Resume."
+}
 
 const ForgotPasswordPage = () => {
   return (
